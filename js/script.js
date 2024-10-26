@@ -30,20 +30,29 @@ const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const imagem = document.getElementById('imagem');
 const tirarFotoBtn = document.getElementById('enviar_foto');
-const diagnosticoElement = document.getElementById('diagnostico');
-const solucaoElement = document.getElementById('solucao');
-const orcamentoElement = document.getElementById('orcamento');
-let isCameraActive = false; // Estado para controlar o fluxo de cliques
-let stream = null; // Armazenar o stream da câmera
+const toggleCameraBtn = document.getElementById('toggle_camera');
+let isCameraActive = false; 
+let stream = null; 
+let facingMode = "environment"; 
+
+// Função para alternar a câmera
+function toggleCamera() {
+    facingMode = facingMode === "user" ? "environment" : "user";
+    if (isCameraActive) {
+        stopCamera();
+        startCamera();
+    }
+}
 
 // Função para iniciar a câmera
 function startCamera() {
-    navigator.mediaDevices.getUserMedia({ video: true })
+    isCameraActive = true;
+    navigator.mediaDevices.getUserMedia({ video: { facingMode } })
         .then((mediaStream) => {
-            video.style.display = 'block'; // Exibir o vídeo quando a câmera estiver ativa
-            imagem.style.display = 'none'; // Ocultar a imagem quando a câmera for ativada
+            video.style.display = 'block';
+            imagem.style.display = 'none';
             video.srcObject = mediaStream;
-            stream = mediaStream; // Armazenar o stream para controle futuro
+            stream = mediaStream; 
         })
         .catch((error) => {
             console.error('Erro ao acessar a câmera: ', error);
@@ -55,10 +64,17 @@ function startCamera() {
 function stopCamera() {
     if (stream) {
         const tracks = stream.getTracks();
-        tracks.forEach(track => track.stop()); // Parar todas as tracks de vídeo
-        stream = null; // Limpar o stream
+        tracks.forEach(track => track.stop());
+        stream = null;
     }
+    isCameraActive = false;
 }
+
+// Evento de clique no botão de alternância de câmera
+toggleCameraBtn.addEventListener('click', toggleCamera);
+
+// Resto do código...
+
 
 // Função para tirar foto e realizar predição
 async function tirarFoto() {
