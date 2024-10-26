@@ -30,29 +30,21 @@ const video = document.getElementById('video');
 const canvas = document.getElementById('canvas');
 const imagem = document.getElementById('imagem');
 const tirarFotoBtn = document.getElementById('enviar_foto');
-const toggleCameraBtn = document.getElementById('toggle_camera');
-let isCameraActive = false; 
-let stream = null; 
-let facingMode = "environment"; 
-
-// Função para alternar a câmera
-function toggleCamera() {
-    facingMode = facingMode === "user" ? "environment" : "user";
-    if (isCameraActive) {
-        stopCamera();
-        startCamera();
-    }
-}
+const diagnosticoElement = document.getElementById('diagnostico');
+const solucaoElement = document.getElementById('solucao');
+const orcamentoElement = document.getElementById('orcamento');
+let isCameraActive = false; // Estado para controlar o fluxo de cliques
+let stream = null; // Armazenar o stream da câmera
 
 // Função para iniciar a câmera
+// Função para iniciar a câmera traseira
 function startCamera() {
-    isCameraActive = true;
-    navigator.mediaDevices.getUserMedia({ video: { facingMode } })
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: 'environment' } } })
         .then((mediaStream) => {
-            video.style.display = 'block';
-            imagem.style.display = 'none';
+            video.style.display = 'block'; // Exibir o vídeo quando a câmera estiver ativa
+            imagem.style.display = 'none'; // Ocultar a imagem quando a câmera for ativada
             video.srcObject = mediaStream;
-            stream = mediaStream; 
+            stream = mediaStream; // Armazenar o stream para controle futuro
         })
         .catch((error) => {
             console.error('Erro ao acessar a câmera: ', error);
@@ -60,21 +52,15 @@ function startCamera() {
         });
 }
 
+
 // Função para parar a câmera
 function stopCamera() {
     if (stream) {
         const tracks = stream.getTracks();
-        tracks.forEach(track => track.stop());
-        stream = null;
+        tracks.forEach(track => track.stop()); // Parar todas as tracks de vídeo
+        stream = null; // Limpar o stream
     }
-    isCameraActive = false;
 }
-
-// Evento de clique no botão de alternância de câmera
-toggleCameraBtn.addEventListener('click', toggleCamera);
-
-// Resto do código...
-
 
 // Função para tirar foto e realizar predição
 async function tirarFoto() {
@@ -158,12 +144,13 @@ function getProblemMessage(predictedClass) {
             break;
 
         case 'LuzFreioMao':
-            diagnosticoElement.textContent = "Seu problema é que o freio de mão está acionado.";
-            solucaoElement.textContent = "Abaixar o freio de mão.";
-            document.getElementById('orcamento-peças').textContent = "Peças: R$ 00";
-            document.getElementById('orcamento-mao-obra').textContent = "Mão de Obra: R$ 00";
-            document.getElementById('orcamento-total').textContent = "Total: R$ 00";
+            diagnosticoElement.textContent = "A luz de freio de mão acesa pode indicar que o freio de estacionamento está ativado ou que há um problema no sistema de freio, como baixo nível de fluido de freio.";
+            solucaoElement.textContent = "Recomendamos verificar se o freio de mão está completamente desativado. Caso o problema persista, verifique o nível de fluido de freio e o sistema de frenagem em geral.";
+            document.getElementById('orcamento-peças').textContent = "Peças: R$ 100 (se necessário)";
+            document.getElementById('orcamento-mao-obra').textContent = "Mão de Obra: R$ 80";
+            document.getElementById('orcamento-total').textContent = "Total: R$ 180 (se necessário)";
             break;
+            
 
         case 'LuzMotor':
             diagnosticoElement.textContent = "A luz de injeção elétrica acesa indica um problema no sistema de injeção eletrônica do veículo, que pode afetar o desempenho do motor e a eficiência de combustível.";
@@ -181,13 +168,14 @@ function getProblemMessage(predictedClass) {
             document.getElementById('orcamento-total').textContent = "Total: R$ 900 (se a substituição da ECU for necessária)";
             break;
 
-            case 'LuzAirbag':
-                diagnosticoElement.textContent = "Problema no sistema de airbag";
-                solucaoElement.textContent = "Airbag";
-                document.getElementById('orcamento-peças').textContent = "Peças: R$ 1800";
-                document.getElementById('orcamento-mao-obra').textContent = "Mão de Obra: R$ 600";
-                document.getElementById('orcamento-total').textContent = "Total: R$ 2400";
-                break;
+        case 'LuzAirbag':
+            diagnosticoElement.textContent = "A luz do airbag indica um problema no sistema de airbag, o que pode comprometer sua ativação em caso de acidente, sendo um risco à segurança.";
+            solucaoElement.textContent = "Recomendamos uma inspeção detalhada do sistema de airbag para identificar e corrigir falhas, que podem incluir sensores, chicotes elétricos ou a própria unidade do airbag.";
+            document.getElementById('orcamento-peças').textContent = "Peças: R$ 1800";
+            document.getElementById('orcamento-mao-obra').textContent = "Mão de Obra: R$ 600";
+            document.getElementById('orcamento-total').textContent = "Total: R$ 2400";
+            break;
+            
 
         default:
             diagnosticoElement.textContent = "Não foi possível identificar o problema.";
@@ -208,3 +196,32 @@ async function init() {
     maxPredictions = model.getTotalClasses(); // Obter o número total de classes
     console.log('Modelo carregado com sucesso!');
 }
+
+
+
+// Aguarde até o Watson Assistant estar carregado
+window.watsonAssistantChatOptions = {
+    integrationID: "b66b7cf7-3de3-4613-956c-5e84f8730328", // ID da integração
+    region: "us-south", // Região onde está hospedado
+    serviceInstanceID: "942fb06d-b814-4868-bc74-e2e68ebb16f7", // ID da instância de serviço
+    onLoad: async (instance) => {
+      await instance.render();
+  
+      // Obtém o botão e adiciona o evento de clique para abrir o chatbot
+      const chatButton = document.getElementById("chat");
+      chatButton.addEventListener("click", () => {
+        instance.openWindow(); // Abre o chatbot no clique do botão
+      });
+    },
+  };
+  
+  // Carrega o Watson Assistant Chat
+  setTimeout(function () {
+    const t = document.createElement("script");
+    t.src =
+      "https://web-chat.global.assistant.watson.appdomain.cloud/versions/" +
+      (window.watsonAssistantChatOptions.clientVersion || "latest") +
+      "/WatsonAssistantChatEntry.js";
+    document.head.appendChild(t);
+  });
+  
