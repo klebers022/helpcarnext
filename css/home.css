@@ -410,6 +410,9 @@ footer{
     .section3 p {
         font-size: 15px;
     }
+    #typing{
+        font-size: 30px;
+    }
 }
 
 /* Estilos para tablets menores (576px a 767px) */
@@ -451,6 +454,9 @@ footer{
 
     .section3 p {
         font-size: 14px;
+    }
+    #typing{
+        font-size: 30px;
     }
 }
 
@@ -502,5 +508,9 @@ footer{
 
     .section3 p {
         font-size: 14px;
+    }
+
+    #typing{
+        font-size: 30px;
     }
 }
