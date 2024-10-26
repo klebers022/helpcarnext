@@ -516,13 +516,3 @@ footer{
     }
 }
 
-.video-container {
-    width: 300px; /* Defina o tamanho desejado */
-    height: 200px;
-    overflow: hidden;
-}
-
-#video {
-    width: 100%;
-    height: auto;
-}
